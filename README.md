@@ -14,6 +14,8 @@ So, The project aims to systematically solve the most challenging backend issues
 
 ---
 
+# 🎬 First Episode: High-Concurrency Event System
+
 ## 1. 📖 Scenario & Problem Definition
 
 **[Scenario]**
