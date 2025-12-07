@@ -1,4 +1,5 @@
-# 👑 My Project - All In One! - All Play Ground (Any themes come to my mind)
+# 👑 My Project - All In One! - All Play Ground 
+### (Any themes come to my mind)
 
 ## 🎯 Project Goal
 
@@ -13,46 +14,42 @@ So, The project aims to systematically solve the most challenging backend issues
 
 ---
 
-## 1. 📖 상황 및 문제 정의
+## 1. 📖 Scenario & Problem Definition
 
-**[상황 설명]**
+**[Scenario]**
+* **High-Concurrency Event:** Simulating a scenario where **10,000 users** send simultaneous requests to claim **100 limited-edition coupons**.
+* **The Challenge:** To achieve **high throughput (TPS)** without compromising **data integrity**, overcoming the limitations of traditional DB locking mechanisms.
 
-* **시나리오:** 100개 한정 쿠폰에 대해 10,000명의 유저가 동시에 발급 요청을 보내는 **초고부하 이벤트**를 가정합니다.
-* **해결 과제:** 일반적인 DB Lock 방식의 한계를 극복하고, **데이터 정합성**을 훼손하지 않으면서 **고성능(TPS)**을 달성해야 합니다.
+## 2. ⚙️ System Design & Tech Stack
 
-## 2. ⚙️ 시스템 설계 및 기술 선택
+### 2.1. Database Design (Minimizing Lock Contention)
+* **Entities:** `Event` (Quantity limits, Versioning), `CouponIssue` (History).
+* **Principle:** Focused on minimizing DB lock contention. Instead of locking a single DB row for every request, I utilize **Redis** for counting to handle high concurrency efficiently.
 
-### 2.1. DB 설계 (락 경합 최소화)
-
-* **엔티티:** `Event` (제한 수량, 버전 관리), `CouponIssue` (발급 이력).
-* **원칙:** 모든 동시 요청이 DB의 단일 Row를 점유하지 않도록, **Redis**를 카운팅에 활용하여 DB 락 경합을 최소화하는 설계에 중점을 둡니다.
-
-### 2.2. 프론트엔드 개발 (극도 단순화)
-
-* **목표:** 백엔드 테스트를 위한 **최소한의 UI**만 구성합니다. (Thymeleaf 또는 Vanilla JS)
-* **기능:** 쿠폰 이벤트 목록, 발급 버튼, 그리고 **Kafka 대기열 기반의 순번 상태 표시** 기능만 구현합니다. (복잡한 SPA 프레임워크 사용 배제)
+### 2.2. Frontend (Minimalist)
+* **Goal:** A minimal UI strictly for backend testing (using Thymeleaf or Vanilla JS).
+* **Features:** Coupon event list, issue button, and a **Kafka-based queue position display**. (Excluding complex SPA frameworks to focus on backend logic).
 
 ---
 
-## 3. 💻 백엔드 개발 및 동시성 구현
+## 3. 💻 Backend Architecture & Concurrency
 
-### 3.1. 멀티 모듈 및 TDD/DDD
+### 3.1. Multi-Module & TDD/DDD
+* **Structure:** A physical separation of **DDD layers** using a multi-module architecture (`domain`, `infrastructure`, `api`) to enforce design principles.
+* **Methodology:** Adopting **TDD (Test-Driven Development)** to prioritize and verify the consistency of domain logic.
 
-* **구조:** 멀티 모듈(`domain`, `infrastructure`, `api`) 기반으로 **DDD 레이어**를 물리적으로 분리하여 설계 원칙을 강제합니다.
-* **개발 방식:** **TDD(Test-Driven Development)**를 통해 도메인 로직의 정합성을 최우선으로 검증합니다.
-
-### 3.2. 핵심 구현 단계 (v1, v2, v3)
-
-* **v1 (DB 락):** **JPA 비관적 락** (`PESSIMISTIC_WRITE`) 구현 및 저하된 TPS 확인.
-* **v2 (Redis Atomic):** **Redis `INCR`** 명령어를 사용한 카운팅 구현으로 TPS를 대폭 개선.
-* **v3 (Kafka 대기열):** **Kafka**를 이용한 **비동기 처리 시스템**을 구축하여 대기 순번 및 시스템 안정성 확보.
+### 3.2. Evolution of Implementation (v1, v2, v3)
+* **v1 (DB Lock):** Implemented **JPA Pessimistic Lock** (`PESSIMISTIC_WRITE`). Verified TPS degradation due to lock contention.
+* **v2 (Redis Atomic):** Significantly improved TPS by using **Redis `INCR`** operations for atomic counting.
+* **v3 (Kafka Queue):** Established an **asynchronous processing system** using **Kafka** to manage waiting queues and ensure system stability under heavy load.
 
 ---
 
-## 4. 📊 배포 및 성능 검증
+## 4. 📊 Deployment & Performance Verification
 
-**[배포]**
+**[Deployment]**
+* **Infrastructure:** Using **Docker Compose** to deploy the entire stack—Spring App, DB, Redis, Kafka, and **Prometheus/Grafana**—in a single command.
 
-* **환경 구축:** Docker Compose를 사용하여 Spring App, DB, Redis, Kafka, **Prometheus/Grafana**까지 모든 인프라를 한 번에 배포할 수 있도록 구성합니다.
-
-* **검증:** **JMeter**로 각 버전(v1 vs v3)의 API에 부하를 가하고, **Grafana** 대시보드를 통해 **TPS, Latency** 변화를 실시간으로 모니터링하여 성능 개선 효과를 수치로 증명합니다.
+**[Verification]**
+* **Load Testing:** Using **JMeter** to apply load to each API version (v1 vs. v3).
+* **Monitoring:** visualizing **TPS and Latency** changes in real-time via **Grafana** dashboards to quantitatively prove performance improvements.
